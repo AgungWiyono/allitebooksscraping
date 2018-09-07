@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta charset="utf-8">
+
+        {% if title %}
+        <title> {{ title}} ebook</title>
+        {% else %}
+        <title> Welcome </title>
+        {% endif %}
+
+        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://unpkg.com/popper.js"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
+
+        {% if do %}
+        {% if not(status) %}
+        <script>
+	$(document).ready(function(){
+        var source = new EventSource("/proccess");
+        source.onmessage = function(event){
+            $('#progressstat').show();
+            $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
+            $('.progress-bar-label').text(event.data+='%');
+	    console.log(event.data);
+            
+            $("#message").text('Collecting url...')
+	    if (event.data > 0){
+                $("#message").text('Loading data...');
+            }
+
+            if (event.data == -1){
+                source.close();
+		$('#progressstat').hide();
+                $('div#response').append('<h2>Book not found</h2>');
+            }
+
+            if (event.data == 100){
+                source.close();
+                $('#progressstat').hide();
+                $.ajax({
+                        url:"/get-content",
+                        type:"GET",
+                        success : function(resp){
+			    console.log(resp.data);
+                            $('div#response').append(resp.data);
+                        }
+                });
+            }
+        }
+	});
+        </script>
+        {% endif %}
+        {% endif %}
+
+        {% if status %}
+        <script>
+	    $(document).ready( function() {
+            $.ajax({
+                    url : "/get-content",
+                    type : "GET",
+                    success : function(resp){
+			console.log(resp.data);
+                        $('div#response').append(resp.data);
+                    }
+            });
+	    });
+        </script>
+        {% endif %}
+
+
+    </head>
+
+    <body>
+
+        
+        {% if status %}
+        <div class="container-fluid" style="margin-top:50px;">
+        {% else %}
+        <div class="container-fluid" style="margin-top:100px;" >  
+        {% endif %}
+        
+        <div class="row justify-content-center">
+            <div class="col-md-4 ">
+            <form method="GET">
+                <div class="input-group ">
+                    <input type="text" class="form-control" name="target" placeholder="Search Book">
+                    <div class="input-group-append">
+                        <button class="btn btn-info" type="submit"> &#128270;</button>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+
+
+        <div id="progressstat" class="row justify-content-center" style="display:none;">
+            <div class="col-md-4 mt-3">
+                <div id="progressbar" class="progress" style="width:auto;">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemax="100" style="width:0%">
+                    <span class="progress-bar-label">0%</span>
+                    </div>
+                </div>
+                    <p id="message"></p>
+            </div>
+        </div>
+        </div>
+
+        <div id="response" class="container-fluid mt-5">
+
+        </div>
+
+
+
+
+    </body>
+
+</html>
