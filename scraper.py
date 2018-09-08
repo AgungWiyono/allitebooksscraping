@@ -67,7 +67,7 @@ class scraper():
         page = BeautifulSoup(r.text, "html.parser")
 
         article = page.find('article')
-        head = ['author',
+        head = ['Author',
                 'ISBN-10',
                 'Year',
                 'Pages',
@@ -77,10 +77,24 @@ class scraper():
         data = {'details': {}}
         data['title'] = article.find('h1').contents[0]
         data['image'] = article.find('img')['src']
+        downloadSect  = page.find_all('span',
+                        {'class':'download-links'}).find_all('a')
         data['description'] = [Markup(i) for i in article.find('div',
                                 {'class': ['entry-content']}).contents]
         for key in head:
             data['details'][key] = self.getSubDescription(article, key)
+        return data
+
+    def getDownloadLink(self, url):
+        r = requests.get(url)
+        page = BeautifulSoup(r.text, "html.parser")
+        article = page.find('article')
+
+        data = {}
+        for i in page.find_all('span', {'class':'download-links'}):
+            href = i.find('a')['href']
+            text = i.find('a').text
+            data[text] = href
         return data
 
     def isAvailable(self):
