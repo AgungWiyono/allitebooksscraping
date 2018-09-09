@@ -1,120 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
+	<head>
 
-        <meta charset="utf-8">
+		<meta charset="utf-8">
 
-        {% if title %}
-        <title> {{ title}} ebook</title>
-        {% else %}
-        <title> Welcome </title>
-        {% endif %}
+		{% if title %}
+		<title> {{ title}} ebook</title>
+		{% else %}
+		<title> Welcome </title>
+		{% endif %}
 
-        <link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://unpkg.com/popper.js"></script>
-        <script src="{{ url_for('static', filename='js/bootstrap.min.js')}}"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		{% if do %}
+		<script>
+			$(document).ready(function(){
+				var source = new EventSource("/proccess");
+					source.onmessage = function(event){
+						$('#progressstat').show();
+						$('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
+						$('.progress-bar-label').text(event.data+='%');
+						console.log(event.data);
 
-        {% if do %}
-        {% if not(status) %}
-        <script>
-	$(document).ready(function(){
-        var source = new EventSource("/proccess");
-        source.onmessage = function(event){
-            $('#progressstat').show();
-            $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
-            $('.progress-bar-label').text(event.data+='%');
-	    console.log(event.data);
-            
-            $("#message").text('Collecting url...')
-	    if (event.data > 0){
-                $("#message").text('Loading data...');
-            }
+						$("#message").text('Collecting url...')
+						if (event.data > 0){
+							$("#message").text('Loading data...');
+						}
 
-            if (event.data == -1){
-                source.close();
-		$('#progressstat').hide();
-                $('div#response').append('<h2>Book not found</h2>');
-            }
+						if (event.data == -1){
+							source.close();
+							$('#progressstat').hide();
+							$('div#response').append('<h2>Book not found</h2>');
+						}
 
-            if (event.data == 100){
-                source.close();
-                $('#progressstat').hide();
-                $.ajax({
-                        url:"/get-content",
-                        type:"GET",
-                        success : function(resp){
-			    console.log(resp.data);
-                	    $('div#response').append(resp.data);
-                        }
-                });
-            }
-        }
-	});
-        </script>
-        {% endif %}
-        {% endif %}
+						if (event.data == 100){
+							source.close();
+							$('#progressstat').hide();
+							$.ajax({
+								url:"/get-content",
+								type:"GET",
+								success : function(resp){
+									console.log(resp.data);
+									$('div#response').append(resp.data);
+								}
+							});
+						}
+					}
+			});
+		</script>
+		{% endif %}
 
-        {% if status %}
-        <script>
-	    $(document).ready( function() {
-            $.ajax({
-                    url : "/get-content",
-                    type : "GET",
-                    success : function(resp){
-			console.log(resp.data);
-                        $('div#response').append(resp.data);
-                    }
-            });
-	    });
-        </script>
-        {% endif %}
+		{% if status %}
+		<script>
+			$(document).ready( function() {
+				$.ajax({
+					url : "/get-content",
+					type : "GET",
+					success : function(resp){
+						console.log(resp.data);
+						$('div#response').append(resp.data);
+					}
+				});
+			});
+		</script>
+		{% endif %}
 
 
-    </head>
+	</head>
 
-    <body>
-
-        
-        {% if status %}
-        <div class="container-fluid" style="margin-top:50px;">
-        {% else %}
-        <div class="container-fluid" style="margin-top:100px;" >  
-        {% endif %}
-        
-        <div class="row justify-content-center">
-            <div class="col-md-4 ">
-            <form method="GET">
-                <div class="input-group ">
-                    <input type="text" class="form-control" name="target" placeholder="Search Book">
-                    <div class="input-group-append">
-                        <button class="btn btn-info" type="submit"> &#128270;</button>
-                    </div>
-                </div>
-            </form>
-            </div>
-        </div>
+	<body>
 
 
-        <div id="progressstat" class="row justify-content-center" style="display:none;">
-            <div class="col-md-4 mt-3">
-                <div id="progressbar" class="progress" style="width:auto;">
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemax="100" style="width:0%">
-                    <span class="progress-bar-label">0%</span>
-                    </div>
-                </div>
-                    <p id="message"></p>
-            </div>
-        </div>
-        </div>
+		{% if status %}
+		<div class="container-fluid" style="margin-top:50px;">
+		{% else %}
+                <div class="container-fluid" style="margin-top:100px;" >
+		{% endif %}
 
-        <div id="response" class="container-fluid mt-5">
+			<!-- search bar row -->
+			<div class="row justify-content-center">
+				<div class="col-md-4 ">
+					<form method="GET">
+						<div class="input-group ">
+							<input type="text" class="form-control" name="target" placeholder="Search Book">
+							<div class="input-group-append">
+									<button class="btn btn-info" type="submit"> &#128270;</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
 
-        </div>
+			<!-- progress bar row -->
+			<div id="progressstat" class="row justify-content-center" style="display:none;">
+				<div class="col-md-4 mt-3">
+					<div id="progressbar" class="progress" style="width:auto;">
+						<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemax="100" style="width:0%">
+							<span class="progress-bar-label">0%</span>
+						</div>
+					</div>
+					<p id="message"></p>
+				</div>
+			</div>
 
+		</div>
 
+		<div id="response" class="container-fluid mt-5">
+		</div>
 
-
-    </body>
+	</body>
 
 </html>

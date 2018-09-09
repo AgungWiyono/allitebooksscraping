@@ -1,8 +1,7 @@
 from flask import Flask
 from flask import render_template, flash, request, Response, jsonify
 from flask_paginate import Pagination
-from scraper import scraper
-from pagination import pagination
+from ref import scraper, pagination
 import time
 
 app = Flask(__name__)
@@ -15,33 +14,24 @@ def get_book(page, per_page):
     return scrapedata.getData()[start:start+per_page]
 
 
-@app.route('/tes')
-def tes():
-    data = scrapedata.getDescription(
-                'http://http://www.allitebooks.com/pro-android-with-kotlin/')
-    return data['description']
-
-
 @app.route('/', methods=['GET'])
 @app.route('/index', methods=['GET'])
 def index():
     target = request.args.get('target')
     if (target is None or target == ''):
-        return render_template('index.html',
-                                do=False,
-                                status=False)
+        return render_template('index.html')
     elif target != scrapedata.getTarget():
         scrapedata.setTarget(target)
         paginatee.setPage(1)
         return render_template('index.html',
-                               status=scrapedata.getStatus(),
-                               do=True
+                               do=True,
+                               title = scrapedata.getTarget()
                                )
     else:
         paginatee.setPage(int(request.args.get('page', 1)))
         return render_template('index.html',
                                status=True,
-                               do=False
+                               title = scrapedata.getTarget()
                                )
 
 

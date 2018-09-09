@@ -1,47 +1,65 @@
 {% if pagination %}
 
-    {% for item in data %}
-    <div class="row mt-3 justify-content-center">
-        <div class="col-md-2">
-            <img src="{{ item['image']}}" style="width:100%; height:100%;" alt="{{ item['title'] }}">
-        </div>
-        <div class="col-md-6">
-                <h4> {{ item['title'] }}</h4>
+	{% for item in data %}
+	<div class="row mt-3 justify-content-center">
 
-                <table border="0">
-                    {% for detail in item['details'] %}
-                    <tr>
-                        <td> <b> {{detail}}</b></td>
-                        <td> : </td>
-                        <td> {{ item['details'][detail]}}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-        </div>
-    </div>
-    <div class="row mt-3 justify-content-center">
-      <div class="col-md-8">
+		<div class="col-md-2">
+			<img src="{{ item['image']}}" style="width:100%; height:100%;" alt="{{ item['title'] }}">
+		</div>
 
-	  <a href="#data{{ loop.index + (page-1)*per_page}}" align="center" class="text-white" data-toggle="collapse">
-	      <span class="bg-primary " style="display:block;text-align:center;">
-		      <h4> Detail </h4>
-	      </span>
-	 </a>
+		<div class="col-md-6">
+			<h4> {{ item['title'] }}</h4>
+			<table border="0">
+				{% for detail in item['details'] %}
+				<tr>
+					<td>
+						<b> {{detail}}</b>
+					</td>
+					<td>
+						:
+					</td>
+					<td>
+						{{ item['details'][detail]}}
+					</td>
+				</tr>
+				{% endfor %}
 
-	 <div id="data{{ loop.index + (page-1)*per_page }}" class="collapse">
-          {% for i in item['description'] %}
-          {{ i }}
-          {% endfor %}
-	 </div>
-	 <hr>
-      </div>
-    </div>
-    {% endfor %}
-    <div class="row mt-3 justify-content-center">
-	<div class="col-md-8">
-    		{{ pagination.links }}
+				<tr>
+					<td colspan="3">
+						{% for link in item['download'] %}
+						<a href="{{ item['download'][link] }}" target="_blank" class="btn btn-primary">
+						{{ link }}
+						</a>
+						{% endfor %}
+					</td>
+				</tr>
+
+			</table>
+		</div>
 	</div>
-    </div>
+
+	<div class="row mt-3 justify-content-center">
+		<div class="col-md-8">
+			<a href="#data{{ loop.index + (page-1)*per_page}}"
+                            align="center" class="btn btn-primary btn-block" data-toggle="collapse">
+				<h4> Detail </h4>
+			</a>
+			<div id="data{{ loop.index + (page-1)*per_page }}" class="collapse">
+				{% for i in item['description'] %}
+				{{ i }}
+				{% endfor %}
+			</div>
+			<hr>
+		</div>
+	</div>
+	{% endfor %}
+	{# end of content loop #}
+
+	<div class="row mt-3 justify-content-center">
+		<div class="col-md-8">
+			{{ pagination.links }}
+		</div>
+	</div>
 
 
 {% endif %}

@@ -29,6 +29,9 @@ class scraper():
         self.booklist = []
         self.target = data
 
+    def setTotalData(self, data):
+        self.totaldata = data
+
     def getTarget(self):
         return self.target
 
@@ -52,7 +55,7 @@ class scraper():
             articleList = page.find_all('article')
             for book in articleList:
                 linkList.append(book.find('a')['href'])
-        self.totaldata = len(linkList)
+        self.setTotalData(len(linkList))
         return linkList
 
     def getSubDescription(self, page, target):
@@ -74,15 +77,17 @@ class scraper():
                 'File size',
                 'File format',
                 'Category']
-        data = {'details': {}}
+        data = {'details': {}, 'download':{}}
         data['title'] = article.find('h1').contents[0]
         data['image'] = article.find('img')['src']
-        downloadSect  = page.find_all('span',
-                        {'class':'download-links'}).find_all('a')
         data['description'] = [Markup(i) for i in article.find('div',
                                 {'class': ['entry-content']}).contents]
         for key in head:
             data['details'][key] = self.getSubDescription(article, key)
+        for i in page.find_all('span', {'class':['download-links']}):
+            href = i.find('a')['href']
+            text = i.find('a').text
+            data['download'][text]=href
         return data
 
     def getDownloadLink(self, url):
@@ -118,3 +123,17 @@ class scraper():
         for link in linkList:
             self.booklist.append(self.getDescription(link))
             yield str(self.getProgress())
+
+
+class pagination(object):
+
+    def __init__(self):
+        self.page = 1
+        self.per_page = 5
+        self.total = 10
+
+    def setPage(self,page):
+        self.page = page
+
+    def setTotal(self, total):
+        self.total = total
